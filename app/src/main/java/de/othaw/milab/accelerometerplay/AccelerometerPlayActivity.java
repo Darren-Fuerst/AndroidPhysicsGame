@@ -399,17 +399,20 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
             public void computePhysics(float sx, float sy, float dT) {
 
                 // increase the acceleration throughout the levels
-                final float ax = -sx/5 * (levelcount + 1) * 0.5f;
+               final float ax = -sx/5 * (levelcount + 1) * 0.5f;
+
 
                 //increase the acceleration throughout the levels
                 final float ay = -sy/5 * (levelcount + 1) * 0.5f;
 
+
                 if (mParticleSystem.checkIfByFalseFriend()){
                     mPosX += mVelX / 3.5 * dT + ax * dT * dT / 2;
                     mPosY += mVelY / 3.5 * dT + ay * dT * dT / 2;
-                }
+                }else{
                     mPosX += mVelX * dT + ax * dT * dT / 2;
                     mPosY += mVelY * dT + ay * dT * dT / 2;
+                }
 
 
                 System.out.println("-------------------: " + sx );
@@ -484,7 +487,7 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
                     addView(mFalseFriends[i], new ViewGroup.LayoutParams(mDstWidth, mDstHeight));
                 }
 
-                goal.setBackgroundColor(Color.BLACK);
+                goal.setBackgroundColor(Color.MAGENTA);
                 goal.setLayerType(LAYER_TYPE_HARDWARE, null);
                 addView(goal, new ViewGroup.LayoutParams(mDstWidth, mDstHeight));
 
