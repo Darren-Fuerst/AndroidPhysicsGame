@@ -48,6 +48,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.util.Log;
+
 
 import java.util.Random;
 
@@ -74,6 +76,8 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
     private WakeLock mWakeLock;
 
     private static int levelcount = 0;
+
+
 
 
     /** Called when the activity is first created. */
@@ -394,17 +398,21 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
              */
             public void computePhysics(float sx, float sy, float dT) {
 
-                final float ax = -sx/5;
-                final float ay = -sy/5;
+                // increase the acceleration throughout the levels
+                final float ax = -sx/5 * (levelcount + 1) * 0.5f;
+
+                //increase the acceleration throughout the levels
+                final float ay = -sy/5 * (levelcount + 1) * 0.5f;
 
                 if (mParticleSystem.checkIfByFalseFriend()){
                     mPosX += mVelX / 3.5 * dT + ax * dT * dT / 2;
                     mPosY += mVelY / 3.5 * dT + ay * dT * dT / 2;
-                }else{
+                }
                     mPosX += mVelX * dT + ax * dT * dT / 2;
                     mPosY += mVelY * dT + ay * dT * dT / 2;
-                }
 
+
+                System.out.println("-------------------: " + sx );
 
                 mVelX += ax * dT;
                 mVelY += ay * dT;
