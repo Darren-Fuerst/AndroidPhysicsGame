@@ -39,18 +39,15 @@ import android.os.PowerManager.WakeLock;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.util.Log;
 
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Random;
 
 /**
@@ -67,7 +64,7 @@ import java.util.Random;
 
 public class AccelerometerPlayActivity extends AppCompatActivity {
 
-    private static final int LEVELS_TO_PLAY = 4;
+    private static final int LEVELS_TO_PLAY = 1;
     private SimulationView mSimulationView;
     private SensorManager mSensorManager;
     private PowerManager mPowerManager;
@@ -76,9 +73,11 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
     private WakeLock mWakeLock;
 
     private static int levelcount = 0;
+    private static Duration duration;
 
+    private Instant starttime;
 
-
+    HighScoreEntryDBHelper dbHelper = new HighScoreEntryDBHelper(this);
 
     /** Called when the activity is first created. */
     @Override
@@ -103,6 +102,9 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
         mSimulationView = new SimulationView(this);
         mSimulationView.setBackgroundResource(R.drawable.wood);
         setContentView(mSimulationView);
+
+        starttime = Instant.now();
+
     }
 
     public static int getLevelCount(){
@@ -112,9 +114,12 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
     /**
      * finishes the current Activity and returns to the Main Menu
      */
-    public void backToMenu(){
+    public void goToScoreMenu(){
         levelcount = 0;
-        finish();
+        Instant endtime = Instant.now();
+        duration = Duration.between(starttime, endtime);
+        Intent intent = new Intent(this, gameend_menu.class);
+        startActivity(intent);
     }
 
     /**
@@ -136,7 +141,7 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
             //reregister the Accelerometer
             mSimulationView.startSimulation();
         } else {
-            backToMenu();
+            goToScoreMenu();
         }
     }
 
@@ -167,6 +172,10 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
 
         // and release our wake-lock
         mWakeLock.release();
+    }
+
+    public static Duration getDuration() {
+        return duration;
     }
 
     /**
@@ -413,9 +422,6 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
                     mPosX += mVelX * dT + ax * dT * dT / 2;
                     mPosY += mVelY * dT + ay * dT * dT / 2;
                 }
-
-
-                System.out.println("-------------------: " + sx );
 
                 mVelX += ax * dT;
                 mVelY += ay * dT;
