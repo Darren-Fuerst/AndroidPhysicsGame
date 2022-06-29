@@ -4,14 +4,20 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.513" />
+        <entry key="app/src/main/res/layout/activity_connect_mqtt.xml" value="0.5890625" />
+        <entry key="app/src/main/res/layout/activity_gameend_menu.xml" value="0.6244791666666667" />
+        <entry key="app/src/main/res/layout/activity_gameend_screen.xml" value="0.6244791666666667" />
+        <entry key="app/src/main/res/layout/activity_high_score_list_layout.xml" value="0.6166666666666667" />
         <entry key="app/src/main/res/layout/main.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/menu_main.xml" value="0.5206953642384106" />
+        <entry key="app/src/main/res/layout/person_name_and_time.xml" value="0.621875" />
         <entry key="app/src/main/res/layout/popup_window.xml" value="0.3328125" />
+        <entry key="app/src/main/res/layout/settings_activity.xml" value="0.5890625" />
         <entry key="app/src/main/res/layout/win_menu.xml" value="0.6244791666666667" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
