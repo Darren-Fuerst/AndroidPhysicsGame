@@ -73,7 +73,11 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int LEVELS_TO_PLAY = 1;
+    /**
+     * Dictates how many levels there are until Player has completed the game and time is stopped
+     */
+    private static final int LEVELS_TO_PLAY = 3;
+
     private SimulationView mSimulationView;
     private SensorManager mSensorManager;
     private PowerManager mPowerManager;
@@ -129,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         mSimulationView.setBackgroundResource(R.drawable.wood);
         setContentView(mSimulationView);
 
-
         starttime = Instant.now();
 
     }
@@ -161,7 +164,10 @@ public class MainActivity extends AppCompatActivity {
         //unregister
         mSimulationView.stopSimulation();
 
-        // while levels to play
+        if(remote == 1) {
+            blinkLevels();
+        }
+        // if levels to play has not been reached
         if (levelcount < LEVELS_TO_PLAY) {
             // instantiate a new Level
             mSimulationView = new SimulationView(this);
@@ -170,10 +176,17 @@ public class MainActivity extends AppCompatActivity {
             //reregister the Accelerometer
             mSimulationView.startSimulation();
         } else {
+            mqtt_win();
             goToScoreMenu();
         }
     }
 
+    private void blinkLevels(){
+        //gelb blinken zwischen leveln
+        publish(pub_topic, "gelb");
+        sleep();
+        publish(pub_topic, "schwarz");
+    }
 
     /**
      * Connect to broker and
@@ -226,6 +239,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Publishes a message via MQTT (with fixed topic)
+     * @param topic topic to publish with
+     * @param msg message to publish with publish topic
+     */
+    private void publish(String topic, String msg) {
+        MqttMessage message = new MqttMessage(msg.getBytes());
+        message.setQos(qos);
+        try {
+            client.publish(topic, message);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Unsubscribe from default topic (please unsubscribe from further
+     * topics prior to calling this function)
+     */
+    private void disconnect() {
+        try {
+            client.unsubscribe(sub_topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
+        }
+        try {
+            Log.d(TAG, "Disconnecting from broker");
+            client.disconnect();
+            Log.d(TAG, "Disconnected.");
+        } catch (MqttException me) {
+            Log.e(TAG, me.getMessage());
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -255,11 +303,32 @@ public class MainActivity extends AppCompatActivity {
          * release our sensor resources and wake locks
          */
 
+        if (remote == 1){
+            disconnect();
+        }
+
         // Stop the simulation
         mSimulationView.stopSimulation();
 
         // and release our wake-lock
         mWakeLock.release();
+    }
+
+    private void mqtt_win(){
+        for (int i = 0; i < 3; i++) {
+            publish(pub_topic, "rot");
+            sleep();
+            publish(pub_topic, "schwarz");
+            sleep();
+        }
+    }
+
+    private void sleep(){
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Duration getDuration() {
@@ -665,7 +734,7 @@ public class MainActivity extends AppCompatActivity {
                 // update the system's positions
                 updatePositions(sx, sy, now);
 
-                if (checkIfByGoal()){
+                if (checkIfByFalseFriend()){
                     stopSimulation();
 
                     newLevel();

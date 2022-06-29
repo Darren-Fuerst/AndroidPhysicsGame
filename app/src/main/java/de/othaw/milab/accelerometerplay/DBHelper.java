@@ -8,9 +8,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
 
+import java.text.DecimalFormat;
+
 public class DBHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 18;
+    public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "HighScoreEntry.db";
 
     public DBHelper(Context context) {
@@ -41,8 +43,22 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public void updateScore(String name, float time){
+
         // Gets the data repository in write mode
         SQLiteDatabase db = getWritableDatabase();
+
+        // trim whitespace
+        name = name.trim();
+
+        // check if left empty
+        if (name.length() < 1){
+            name = "Unbekannt";
+        }
+
+        // 3 decimal places only
+        DecimalFormat twoDForm = new DecimalFormat("#.###");
+        time = Float.valueOf(twoDForm.format(time));
+
 
         // check if entry for given name exists already
         Float curtime = readTime(name);
@@ -86,6 +102,7 @@ public class DBHelper extends SQLiteOpenHelper {
         try {
             cursor.moveToNext();
             Float current_time = cursor.getFloat(cursor.getColumnIndex(HighScoreContract.HighScoreEntry.COLUMN_TIME));
+            cursor.close();
             return current_time;
         }
         catch(Exception e) {

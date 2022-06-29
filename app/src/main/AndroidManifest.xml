@@ -9,13 +9,15 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
-
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Physics Game"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AccelerometerPlay">
+        <activity
+            android:name=".ListHighScores"
+            android:exported="false" />
         <activity
             android:name=".ConnectMQTT"
             android:exported="false" />
@@ -33,7 +35,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="org.eclipse.paho.android.service.MqttService"/>
+
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
     </application>
 
 </manifest>

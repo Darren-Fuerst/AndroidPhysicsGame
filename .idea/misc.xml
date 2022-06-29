@@ -4,10 +4,12 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.513" />
+        <entry key="app/src/main/res/drawable/list_divider.xml" value="0.513" />
         <entry key="app/src/main/res/layout/activity_connect_mqtt.xml" value="0.5890625" />
         <entry key="app/src/main/res/layout/activity_gameend_menu.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/activity_gameend_screen.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/activity_high_score_list_layout.xml" value="0.6166666666666667" />
+        <entry key="app/src/main/res/layout/activity_list_high_scores.xml" value="0.6" />
         <entry key="app/src/main/res/layout/main.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/menu_main.xml" value="0.5206953642384106" />
         <entry key="app/src/main/res/layout/person_name_and_time.xml" value="0.621875" />
