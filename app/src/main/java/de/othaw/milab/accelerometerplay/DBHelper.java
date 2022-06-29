@@ -1,5 +1,6 @@
 package de.othaw.milab.accelerometerplay;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,7 +13,7 @@ import java.text.DecimalFormat;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 20;
     public static final String DATABASE_NAME = "HighScoreEntry.db";
 
     public DBHelper(Context context) {
@@ -27,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(SettingsContract.SettingsEntry.COLUMN_REMOTE, SettingsContract.SettingsEntry.remoteval);
         values.put(SettingsContract.SettingsEntry.COLUMN_BROKER, SettingsContract.SettingsEntry.brokerval);
-
+        values.put(SettingsContract.SettingsEntry.COLUMN_SOUND, SettingsContract.SettingsEntry.soundval);
         db.insert(
                 SettingsContract.SettingsEntry.TABLE_NAME, null, values);
     }
@@ -57,7 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         // 3 decimal places only
         DecimalFormat twoDForm = new DecimalFormat("#.###");
-        time = Float.valueOf(twoDForm.format(time));
+        time = Float.parseFloat(twoDForm.format(time));
 
 
         // check if entry for given name exists already
@@ -122,7 +123,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public String getBroker() {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT " + SettingsContract.SettingsEntry.COLUMN_BROKER + " FROM " + SettingsContract.SettingsEntry.TABLE_NAME, null);
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery("SELECT " + SettingsContract.SettingsEntry.COLUMN_BROKER + " FROM " + SettingsContract.SettingsEntry.TABLE_NAME, null);
 
         try {
             cursor.moveToNext();
@@ -135,7 +136,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Integer getRemote() {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT " + SettingsContract.SettingsEntry.COLUMN_REMOTE + " FROM " + SettingsContract.SettingsEntry.TABLE_NAME, null);
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery("SELECT " + SettingsContract.SettingsEntry.COLUMN_REMOTE + " FROM " + SettingsContract.SettingsEntry.TABLE_NAME, null);
 
         try {
             cursor.moveToNext();
@@ -145,6 +146,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return cursor.getInt(0);
     }
+
 
     public void settBroker(String brokerip) {
         SQLiteDatabase db = getWritableDatabase();
@@ -156,6 +158,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(SettingsContract.SettingsEntry.COLUMN_ID, 1);
         values.put(SettingsContract.SettingsEntry.COLUMN_BROKER, ip);
         values.put(SettingsContract.SettingsEntry.COLUMN_REMOTE, getRemote());
+        values.put(SettingsContract.SettingsEntry.COLUMN_SOUND, getSound());
 
         db.insertWithOnConflict(SettingsContract.SettingsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 
@@ -172,6 +175,36 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(SettingsContract.SettingsEntry.COLUMN_ID, 1);
         values.put(SettingsContract.SettingsEntry.COLUMN_REMOTE, i);
         values.put(SettingsContract.SettingsEntry.COLUMN_BROKER, getBroker());
+        values.put(SettingsContract.SettingsEntry.COLUMN_SOUND, getSound());
+
+        db.insertWithOnConflict(SettingsContract.SettingsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+
+    }
+
+    public Integer getSound() {
+        SQLiteDatabase db = getReadableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery("SELECT " + SettingsContract.SettingsEntry.COLUMN_SOUND + " FROM " + SettingsContract.SettingsEntry.TABLE_NAME, null);
+
+        try {
+            cursor.moveToNext();
+        } catch (Exception e) {
+            return null;
+        }
+
+        return cursor.getInt(0);
+    }
+
+    public void setSound(int i) {
+
+        assert (i == 0 || i == 1);
+        SQLiteDatabase db = getWritableDatabase();
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        // we only ever want one row of settings
+        values.put(SettingsContract.SettingsEntry.COLUMN_ID, 1);
+        values.put(SettingsContract.SettingsEntry.COLUMN_REMOTE, getRemote());
+        values.put(SettingsContract.SettingsEntry.COLUMN_BROKER, getBroker());
+        values.put(SettingsContract.SettingsEntry.COLUMN_SOUND, i);
 
         db.insertWithOnConflict(SettingsContract.SettingsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/wood"
     tools:context=".ConnectMQTT">
 
     <EditText
@@ -13,7 +14,7 @@
         android:layout_marginTop="68dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:text=""
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,6 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="96dp"
         android:text="Hier kannst du deine MQTT Verbindung einstellen:"
+        android:textSize="15dp"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"

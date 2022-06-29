@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.time.Duration;
 
 public class gameend_menu extends AppCompatActivity {
@@ -24,7 +25,11 @@ public class gameend_menu extends AppCompatActivity {
 
         TextView t = findViewById(R.id.timetextview);
 
-        t.setText("Your time needed was " +  duration.toMillis() * 0.001f + " seconds!");
+        DecimalFormat twoDForm = new DecimalFormat("#.###");
+        float time = Float.parseFloat(twoDForm.format(duration.toMillis() * 0.001f));
+
+        String time_needed = "Your time needed was " + time   + " seconds!";
+        t.setText(time_needed);
 
     }
 

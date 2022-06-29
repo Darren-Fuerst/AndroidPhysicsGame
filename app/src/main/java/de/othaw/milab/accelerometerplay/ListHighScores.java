@@ -1,14 +1,13 @@
 package de.othaw.milab.accelerometerplay;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class ListHighScores extends AppCompatActivity {
 

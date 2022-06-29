@@ -1,46 +1,44 @@
 package de.othaw.milab.accelerometerplay;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CursorAdapter;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 public class MainMenu extends AppCompatActivity {
 
-    private DBHelper dbHelper = new DBHelper(this);
-    private CheckBox mqttbox;
-
-    public int REMOTEFLAG;
-
+    private final DBHelper dbHelper = new DBHelper(this);
+    private Switch mqttswitch;
+    private Switch soundswitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.menu_main);
 
-        mqttbox = findViewById(R.id.mqtt_checkbox);
-        if (dbHelper.getRemote() == 1){
-            mqttbox.setChecked(true);
-            REMOTEFLAG = 1;
-        }else{
-            mqttbox.setChecked(false);
-            REMOTEFLAG = 0;
-        }
+        mqttswitch = findViewById(R.id.mqtt_switch);
+        mqttswitch.setChecked(dbHelper.getRemote() == 1);
+
+        soundswitch = findViewById(R.id.sound_switch);
+        soundswitch.setChecked(dbHelper.getSound() == 1);
     }
 
     private void updateRemoteFlag(){
-        if (mqttbox.isChecked()){
+        if (mqttswitch.isChecked()){
             dbHelper.setRemote(1);
-            REMOTEFLAG = 1;
         }else{
             dbHelper.setRemote(0);
-            REMOTEFLAG = 0;
+        }
+    }
+
+    private void updateSoundFlag(){
+        if (soundswitch.isChecked()){
+            dbHelper.setSound(1);
+        }else{
+            dbHelper.setSound(0);
         }
     }
 
@@ -51,7 +49,7 @@ public class MainMenu extends AppCompatActivity {
 
     public void openGameActivity(View v){
         updateRemoteFlag();
-
+        updateSoundFlag();
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
 
