@@ -11,7 +11,7 @@ public class HighScoreContract {
 
     public static class HighScoreEntry implements BaseColumns{
         public static final String TABLE_NAME = "highscore_table";
-        public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_NAME = "_id";
         public static final String COLUMN_TIME = "time";
 
 

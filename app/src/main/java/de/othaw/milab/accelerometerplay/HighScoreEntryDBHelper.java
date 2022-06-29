@@ -10,7 +10,7 @@ import android.text.Editable;
 
 public class HighScoreEntryDBHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
     public static final String DATABASE_NAME = "HighScoreEntry.db";
 
     public HighScoreEntryDBHelper(Context context) {
@@ -83,4 +83,14 @@ public class HighScoreEntryDBHelper extends SQLiteOpenHelper {
         }
         
     }
+
+    public Cursor getBestScores(){
+        SQLiteDatabase db = getReadableDatabase();
+
+        String query = "SELECT " + HighScoreContract.HighScoreEntry.COLUMN_NAME +"," + HighScoreContract.HighScoreEntry.COLUMN_TIME + " FROM " + HighScoreContract.HighScoreEntry.TABLE_NAME +" ORDER BY " + HighScoreContract.HighScoreEntry.COLUMN_TIME + " DESC";
+        return db.rawQuery(query, null);
+
+    }
+
+
 }

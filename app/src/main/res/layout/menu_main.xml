@@ -10,7 +10,7 @@
         android:layout_width="529dp"
         android:layout_height="787dp"
         android:background="@drawable/wood"
-        android:text="Welcome"
+        android:text="HighScores"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.737"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,10 +20,37 @@
         android:id="@+id/startgamebtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="340dp"
+        android:layout_marginTop="484dp"
         android:onClick="openGameActivity"
         android:text="Start Game"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+    <ListView
+        android:id="@+id/list_view"
+        style="@android:style/Widget.ListView.Menu"
+        android:layout_width="250dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="32dp"
+        android:textColor="#FFFFFF"
+        android:alpha="0.8"
+        android:background="#59370C"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/pi_connect_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:text="Connect to Pi"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startgamebtn" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
