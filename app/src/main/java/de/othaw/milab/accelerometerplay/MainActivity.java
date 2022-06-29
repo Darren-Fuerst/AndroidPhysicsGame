@@ -38,13 +38,22 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 
+
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -62,7 +71,7 @@ import java.util.Random;
  * @see Sensor
  */
 
-public class AccelerometerPlayActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final int LEVELS_TO_PLAY = 1;
     private SimulationView mSimulationView;
@@ -72,17 +81,34 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
     private Display mDisplay;
     private WakeLock mWakeLock;
 
+    private static final String sub_topic = "sensor/data";
+    private static final String pub_topic = "sensehat/message";
+    private int qos = 0; // MQTT quality of service
+    private Float[] data = new Float[] {0f,0f};
+    private String clientId;
+    private MemoryPersistence persistence = new MemoryPersistence();
+    private MqttClient client;
+    private String TAG = MainActivity.class.getSimpleName();
+    private DBHelper dbHelper;
+
+    private String BROKER;
+
     private static int levelcount = 0;
     private static Duration duration;
 
     private Instant starttime;
 
-    HighScoreEntryDBHelper dbHelper = new HighScoreEntryDBHelper(this);
+    private int remote;
+
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        dbHelper = new DBHelper(this);
+        BROKER = dbHelper.getBroker();
+        remote = dbHelper.getRemote();
 
         // Get an instance of the SensorManager
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -103,6 +129,7 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
         mSimulationView.setBackgroundResource(R.drawable.wood);
         setContentView(mSimulationView);
 
+
         starttime = Instant.now();
 
     }
@@ -110,6 +137,8 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
     public static int getLevelCount(){
         return levelcount;
     }
+
+
 
     /**
      * finishes the current Activity and returns to the Main Menu
@@ -145,9 +174,68 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Connect to broker and
+     * @param broker Broker to connect to
+     */
+    private void connect (String broker) {
+        try {
+            clientId = MqttClient.generateClientId();
+            client = new MqttClient(broker, clientId, persistence);
+            //wait 3 Seconds to establish a Connection
+            client.setTimeToWait(3000);
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts.setCleanSession(true);
+            Log.d(TAG, "Connecting to broker: " + broker);
+            client.connect(connOpts);
+            Log.d(TAG, "Connected with broker: " + broker);
+        } catch (MqttException me) {
+            remote = 0;
+            Log.e(TAG, "Reason: " + me.getReasonCode());
+            Log.e(TAG, "Message: " + me.getMessage());
+            Log.e(TAG, "localizedMsg: " + me.getLocalizedMessage());
+            Log.e(TAG, "cause: " + me.getCause());
+            Log.e(TAG, "exception: " + me);
+        }
+    }
+
+
+    /**
+     * Subscribes to a given topic
+     * @param topic Topic to subscribe to
+     */
+    private void subscribe(String topic) {
+        try {
+            client.subscribe(topic, qos, new IMqttMessageListener() {
+                @Override
+                public void messageArrived(String topic, MqttMessage msg) throws Exception {
+                    String message = new String(msg.getPayload());
+                    String[] mSplit = message.split(",");
+                    for (int i = 0; i < mSplit.length; i++) {
+                        data[i] = Float.parseFloat(mSplit[i]);
+                    }
+                    Log.d(TAG, "Message with topic " + topic + " arrived: " + message);
+                    System.out.println(message);
+                }
+            });
+            Log.d(TAG, "subscribed to topic " + topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
+
+        if(remote == 1) {
+            connect(BROKER);
+            subscribe(sub_topic);
+        }
+
+
         /*
          * when the activity is resumed, we acquire a wake-lock so that the
          * screen stays on, since the user will likely not be fiddling with the
@@ -716,11 +804,15 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
              * of the acceleration. As an added benefit, we use less power and
              * CPU resources.
              */
-            mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
+            if(remote == 0) {
+                mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
+            }
         }
 
         public void stopSimulation() {
-            mSensorManager.unregisterListener(this);
+            if (remote == 0) {
+                mSensorManager.unregisterListener(this);
+            }
         }
 
         public SimulationView(Context context) {
@@ -759,6 +851,7 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
             if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER)
                 return;
             /*
+            /*
              * record the accelerometer data, the event's timestamp as well as
              * the current time. The latter is needed so we can calculate the
              * "present" time during rendering. In this application, we need to
@@ -795,8 +888,17 @@ public class AccelerometerPlayActivity extends AppCompatActivity {
              */
             final ParticleSystem particleSystem = mParticleSystem;
             final long now = System.currentTimeMillis();
-            final float sx = mSensorX;
-            final float sy = mSensorY;
+            final float sx;
+            final float sy;
+            if (remote == 1) {
+
+                sx = data[0];
+                sy = data[1];
+            }
+            else {
+                sx = mSensorX;
+                sy = mSensorY;
+            }
 
             particleSystem.update(sx, sy, now);
 

@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.513" />
+        <entry key="app/src/main/res/layout/activity_connect_mqtt.xml" value="0.5890625" />
         <entry key="app/src/main/res/layout/activity_gameend_menu.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/activity_gameend_screen.xml" value="0.6244791666666667" />
         <entry key="app/src/main/res/layout/activity_high_score_list_layout.xml" value="0.6166666666666667" />

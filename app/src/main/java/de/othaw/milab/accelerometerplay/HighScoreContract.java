@@ -15,12 +15,12 @@ public class HighScoreContract {
         public static final String COLUMN_TIME = "time";
 
 
-        public static final String SQL_CREATE_ENTRIES =
+        public static final String SQL_CREATE_HIGHSCORETABLE =
                 "CREATE TABLE " + HighScoreEntry.TABLE_NAME + " (" +
                         HighScoreEntry.COLUMN_NAME + " TEXT PRIMARY KEY," +
                         HighScoreEntry.COLUMN_TIME + " REAL)";
 
-        public static final String SQL_DELETE_ENTRIES =
+        public static final String SQL_DELETE_HIGHSCORETABLE =
                 "DROP TABLE IF EXISTS " + HighScoreEntry.TABLE_NAME;
     }
 

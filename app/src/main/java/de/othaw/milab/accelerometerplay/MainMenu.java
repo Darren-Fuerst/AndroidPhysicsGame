@@ -2,11 +2,9 @@ package de.othaw.milab.accelerometerplay;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -15,7 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainMenu extends AppCompatActivity {
 
-    HighScoreEntryDBHelper dbHelper = new HighScoreEntryDBHelper(this);
+    private DBHelper dbHelper = new DBHelper(this);
+    private CheckBox mqttbox;
+
+    public int REMOTEFLAG;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,12 +36,38 @@ public class MainMenu extends AppCompatActivity {
             return false;
         } );
 
-
         scorelist.setAdapter(adapter);
+
+        mqttbox = findViewById(R.id.mqtt_checkbox);
+        if (dbHelper.getRemote() == 1){
+            mqttbox.setChecked(true);
+            REMOTEFLAG = 1;
+        }else{
+            mqttbox.setChecked(false);
+            REMOTEFLAG = 0;
+        }
+    }
+
+    private void updateRemoteFlag(){
+        if (mqttbox.isChecked()){
+            dbHelper.setRemote(1);
+            REMOTEFLAG = 1;
+        }else{
+            dbHelper.setRemote(0);
+            REMOTEFLAG = 0;
+        }
     }
 
     public void openGameActivity(View v){
-        Intent intent = new Intent(this, AccelerometerPlayActivity.class);
+        updateRemoteFlag();
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
+    }
+
+    public void openSettingsActivity(View v){
+        Intent intent = new Intent(this, ConnectMQTT.class);
         startActivity(intent);
     }
 

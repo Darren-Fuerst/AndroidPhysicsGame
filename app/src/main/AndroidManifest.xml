@@ -4,8 +4,12 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
+
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Physics Game"
@@ -13,12 +17,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AccelerometerPlay">
         <activity
+            android:name=".ConnectMQTT"
+            android:exported="false" />
+        <activity
             android:name=".HighScoreListLayout"
             android:exported="false" />
         <activity
             android:name=".gameend_menu"
             android:exported="false" />
-        <activity android:name=".AccelerometerPlayActivity" />
+        <activity android:name=".MainActivity" />
         <activity android:name=".MainMenu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,6 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
     </application>
 
 </manifest>
