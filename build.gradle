@@ -12,6 +12,11 @@ buildscript {
     }
 }
 
+
+artifacts {
+    archives generateSources
+}
+
 allprojects {
     repositories {
         google()
