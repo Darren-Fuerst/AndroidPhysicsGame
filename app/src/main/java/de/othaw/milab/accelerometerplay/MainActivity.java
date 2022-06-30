@@ -211,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Connecting to broker: " + broker);
             client.connect(connOpts);
             Log.d(TAG, "Connected with broker: " + broker);
+            publish("Phone Connected.");
         } catch (MqttException me) {
             remote = 0;
             Log.e(TAG, "Reason: " + me.getReasonCode());
