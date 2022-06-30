@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private int sound;
     private MediaPlayer mp;
 
-    private static int levelcount = 0;
+    private static int levelcount;
     private static Duration duration;
 
     private Instant starttime;
@@ -107,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
         BROKER = dbHelper.getBroker();
         remote = dbHelper.getRemote();
         sound = dbHelper.getSound();
+
+        levelcount = 0;
 
         // Get an instance of the SensorManager
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
