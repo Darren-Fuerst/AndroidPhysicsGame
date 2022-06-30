@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Connecting to broker: " + broker);
             client.connect(connOpts);
             Log.d(TAG, "Connected with broker: " + broker);
-            publish("Phone Connected.");
+            blinkConnectionSuccess();
         } catch (MqttException me) {
             remote = 0;
             Log.e(TAG, "Reason: " + me.getReasonCode());
@@ -274,6 +274,14 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Disconnected.");
         } catch (MqttException me) {
             Log.e(TAG, me.getMessage());
+        }
+    }
+
+    private void blinkConnectionSuccess() {
+        for (int i = 0; i < 2; i++) {
+            publish("gruen");
+            sleep();
+            publish("schwarz");
         }
     }
 
