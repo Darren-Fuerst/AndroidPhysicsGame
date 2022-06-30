@@ -2,6 +2,9 @@ package de.othaw.milab.accelerometerplay;
 
 import android.provider.BaseColumns;
 
+/**
+ * Houses the HighScore Table Class "HighscoreEntry"
+ */
 public class HighScoreContract {
 
     private HighScoreContract(){}

@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-public class ConnectMQTT extends AppCompatActivity {
+/**
+ *  Handles the Settings Page for adjusting the broker ip
+ */
+public class ConnectMQTTSettings extends AppCompatActivity {
 
     /**
      * DBHelper to interface with SQLite

@@ -53,11 +53,9 @@ import java.time.Instant;
 import java.util.Random;
 
 /**
- * This is an example of using the accelerometer to integrate the device's
- * acceleration to a position using the Verlet method. This is illustrated with
- * a very simple particle system comprised of a few iron balls freely moving on
- * an inclined wooden table. The inclination of the virtual table is controlled
- * by the device's accelerometer.
+ * The Main Activity handles all Game Views and Elements.
+ * It has Simulationview which can be seen as "one level" for the game
+ *
  *
  * @see SensorManager
  * @see SensorEvent

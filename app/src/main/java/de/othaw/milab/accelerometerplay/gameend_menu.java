@@ -11,6 +11,9 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 import java.time.Duration;
 
+/**
+ * Handles the menu at the end of a game
+ */
 public class gameend_menu extends AppCompatActivity {
 
     // Duration of the game that the menu was called from

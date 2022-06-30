@@ -2,6 +2,9 @@ package de.othaw.milab.accelerometerplay;
 
 import android.provider.BaseColumns;
 
+/**
+ *  Houses the Settings Table Definition Class
+ */
 public class SettingsContract {
 
     private SettingsContract(){}

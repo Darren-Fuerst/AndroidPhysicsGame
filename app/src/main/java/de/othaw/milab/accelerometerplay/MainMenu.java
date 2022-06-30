@@ -6,8 +6,11 @@ import android.view.View;
 import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 
+/**
+ * The MainMenu is the entry point of the app.
+ *
+ */
 public class MainMenu extends AppCompatActivity {
 
     /**
@@ -86,7 +89,7 @@ public class MainMenu extends AppCompatActivity {
      * @param v View
      */
     public void openSettingsActivity(View v){
-        Intent intent = new Intent(this, ConnectMQTT.class);
+        Intent intent = new Intent(this, ConnectMQTTSettings.class);
         startActivity(intent);
     }
 
