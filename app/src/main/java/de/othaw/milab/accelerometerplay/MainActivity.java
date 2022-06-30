@@ -167,11 +167,12 @@ public class MainActivity extends AppCompatActivity {
         //unregister
         mSimulationView.stopSimulation();
 
-        if(remote == 1) {
-            blinkLevels();
-        }
         // if levels to play has not been reached
         if (levelcount < LEVELS_TO_PLAY) {
+            if(remote == 1) {
+                blinkLevels();
+            }
+
             if(sound == 1) {
                 mp.start();
             }
@@ -192,8 +193,6 @@ public class MainActivity extends AppCompatActivity {
     private void blinkLevels(){
         //gelb blinken zwischen leveln
         publish("gelb");
-        sleep();
-        publish("schwarz");
     }
 
     /**
@@ -278,11 +277,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void blinkConnectionSuccess() {
-        for (int i = 0; i < 2; i++) {
             publish("gruen");
-            sleep();
-            publish("schwarz");
-        }
     }
 
     @Override
@@ -326,21 +321,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mqtt_win(){
-        for (int i = 0; i < 3; i++) {
             publish("rot");
-            sleep();
-            publish("schwarz");
-            sleep();
-        }
     }
 
-    private void sleep(){
-        try {
-            Thread.sleep(150);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static Duration getDuration() {
         return duration;
@@ -350,7 +333,6 @@ public class MainActivity extends AppCompatActivity {
      * View handling the particle System and general game Logic
      */
     class SimulationView extends FrameLayout implements SensorEventListener {
-
         /**
          * Diameter of the ball in meters
          */
@@ -709,7 +691,7 @@ public class MainActivity extends AppCompatActivity {
                 // update the system's positions
                 updatePositions(sx, sy, now);
 
-                if (checkIfByGoal()){
+                if (checkIfByFalseFriend()){
                     stopSimulation();
 
                     newLevel();
