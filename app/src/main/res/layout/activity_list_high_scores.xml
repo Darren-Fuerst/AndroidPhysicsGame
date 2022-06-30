@@ -5,43 +5,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/wood"
-    tools:context=".ConnectMQTT">
+    tools:context=".ListHighScores">
 
-    <EditText
-        android:id="@+id/mqttbrokerip"
-        android:layout_width="350dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="68dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text=""
+    <ListView
+        android:id="@+id/list_view"
+        style="@android:style/Widget.ListView.Menu"
+        android:layout_width="297dp"
+        android:layout_height="394dp"
+        android:layout_marginTop="36dp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_mqtt" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
     <TextView
-        android:id="@+id/textView_mqtt"
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="96dp"
-        android:text="Hier kannst du deine MQTT Verbindung einstellen:"
-        android:textSize="15dp"
-        android:textColor="@color/white"
+        android:layout_marginTop="52dp"
+        android:text="Bestenliste"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/mqtt_persistbtn"
+        android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:onClick="persistSettings"
-        android:text="Übernehmen"
+        android:layout_marginTop="32dp"
+        android:onClick="closeMenu"
+        android:text="Zurück"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mqttbrokerip" />
+        app:layout_constraintTop_toBottomOf="@+id/list_view" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

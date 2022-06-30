@@ -17,22 +17,17 @@
 //package com.example.android.accelerometerplay;
 package de.othaw.milab.accelerometerplay;
 
-import android.annotation.TargetApi;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.BitmapFactory.Options;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Build;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -44,11 +39,11 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -73,32 +68,34 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int LEVELS_TO_PLAY = 1;
+    /**
+     * Dictates how many levels there are until Player has completed the game and time is stopped
+     */
+    private static final int LEVELS_TO_PLAY = 5;
+
     private SimulationView mSimulationView;
     private SensorManager mSensorManager;
-    private PowerManager mPowerManager;
-    private WindowManager mWindowManager;
     private Display mDisplay;
     private WakeLock mWakeLock;
 
     private static final String sub_topic = "sensor/data";
     private static final String pub_topic = "sensehat/message";
-    private int qos = 0; // MQTT quality of service
-    private Float[] data = new Float[] {0f,0f};
-    private String clientId;
-    private MemoryPersistence persistence = new MemoryPersistence();
+    private final int qos = 0; // MQTT quality of service
+    private final Float[] data = new Float[] {0f,0f};
+    private final MemoryPersistence persistence = new MemoryPersistence();
     private MqttClient client;
-    private String TAG = MainActivity.class.getSimpleName();
-    private DBHelper dbHelper;
+    private final String TAG = MainActivity.class.getSimpleName();
 
     private String BROKER;
+    private int remote;
+    private int sound;
+    private MediaPlayer mp;
 
     private static int levelcount = 0;
     private static Duration duration;
 
     private Instant starttime;
 
-    private int remote;
 
 
     /** Called when the activity is first created. */
@@ -106,29 +103,33 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        dbHelper = new DBHelper(this);
+        DBHelper dbHelper = new DBHelper(this);
         BROKER = dbHelper.getBroker();
         remote = dbHelper.getRemote();
+        sound = dbHelper.getSound();
 
         // Get an instance of the SensorManager
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // Get an instance of the PowerManager
-        mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        PowerManager mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
 
         // Get an instance of the WindowManager
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mDisplay = mWindowManager.getDefaultDisplay();
 
         // Create a bright wake lock
         mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass()
                 .getName());
 
+        if(sound == 1) {
+            mp = MediaPlayer.create(this, R.raw.level_complete);
+        }
+
         // instantiate our simulation view and set it as the activity's content
         mSimulationView = new SimulationView(this);
         mSimulationView.setBackgroundResource(R.drawable.wood);
         setContentView(mSimulationView);
-
 
         starttime = Instant.now();
 
@@ -141,9 +142,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * finishes the current Activity and returns to the Main Menu
+     * finishes the current Activity and returns to the End of Game Menu
      */
     public void goToScoreMenu(){
+        if (sound == 1) {
+            mp.start();
+        }
         levelcount = 0;
         Instant endtime = Instant.now();
         duration = Duration.between(starttime, endtime);
@@ -161,8 +165,14 @@ public class MainActivity extends AppCompatActivity {
         //unregister
         mSimulationView.stopSimulation();
 
-        // while levels to play
+        if(remote == 1) {
+            blinkLevels();
+        }
+        // if levels to play has not been reached
         if (levelcount < LEVELS_TO_PLAY) {
+            if(sound == 1) {
+                mp.start();
+            }
             // instantiate a new Level
             mSimulationView = new SimulationView(this);
             mSimulationView.setBackgroundResource(R.drawable.wood);
@@ -170,10 +180,19 @@ public class MainActivity extends AppCompatActivity {
             //reregister the Accelerometer
             mSimulationView.startSimulation();
         } else {
+            if(remote == 1) {
+                mqtt_win();
+            }
             goToScoreMenu();
         }
     }
 
+    private void blinkLevels(){
+        //gelb blinken zwischen leveln
+        publish("gelb");
+        sleep();
+        publish("schwarz");
+    }
 
     /**
      * Connect to broker and
@@ -181,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void connect (String broker) {
         try {
-            clientId = MqttClient.generateClientId();
+            String clientId = MqttClient.generateClientId();
             client = new MqttClient(broker, clientId, persistence);
             //wait 3 Seconds to establish a Connection
             client.setTimeToWait(3000);
@@ -203,28 +222,57 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Subscribes to a given topic
-     * @param topic Topic to subscribe to
      */
-    private void subscribe(String topic) {
+    private void subscribe() {
         try {
-            client.subscribe(topic, qos, new IMqttMessageListener() {
-                @Override
-                public void messageArrived(String topic, MqttMessage msg) throws Exception {
-                    String message = new String(msg.getPayload());
-                    String[] mSplit = message.split(",");
-                    for (int i = 0; i < mSplit.length; i++) {
-                        data[i] = Float.parseFloat(mSplit[i]);
-                    }
-                    Log.d(TAG, "Message with topic " + topic + " arrived: " + message);
-                    System.out.println(message);
+            client.subscribe(MainActivity.sub_topic, qos, (topic, msg) -> {
+                String message = new String(msg.getPayload());
+                String[] mSplit = message.split(",");
+                for (int i = 0; i < mSplit.length; i++) {
+                    data[i] = Float.parseFloat(mSplit[i]);
                 }
+                Log.d(TAG, "Message with topic " + topic + " arrived: " + message);
             });
-            Log.d(TAG, "subscribed to topic " + topic);
+            Log.d(TAG, "subscribed to topic " + MainActivity.sub_topic);
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
 
+
+    /**
+     * Publishes a message via MQTT (with fixed topic)
+     * @param msg message to publish with publish topic
+     */
+    private void publish(String msg) {
+        MqttMessage message = new MqttMessage(msg.getBytes());
+        message.setQos(qos);
+        try {
+            client.publish(MainActivity.pub_topic, message);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Unsubscribe from default topic (please unsubscribe from further
+     * topics prior to calling this function)
+     */
+    private void disconnect() {
+        try {
+            client.unsubscribe(sub_topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
+        }
+        try {
+            Log.d(TAG, "Disconnecting from broker");
+            client.disconnect();
+            Log.d(TAG, "Disconnected.");
+        } catch (MqttException me) {
+            Log.e(TAG, me.getMessage());
+        }
+    }
 
     @Override
     protected void onResume() {
@@ -232,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(remote == 1) {
             connect(BROKER);
-            subscribe(sub_topic);
+            subscribe();
         }
 
 
@@ -241,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
          * screen stays on, since the user will likely not be fiddling with the
          * screen or buttons.
          */
-        mWakeLock.acquire();
+        mWakeLock.acquire(10*60*1000L /*10 minutes*/);
 
         // Start the simulation
         mSimulationView.startSimulation();
@@ -255,11 +303,32 @@ public class MainActivity extends AppCompatActivity {
          * release our sensor resources and wake locks
          */
 
+        if (remote == 1){
+            disconnect();
+        }
+
         // Stop the simulation
         mSimulationView.stopSimulation();
 
         // and release our wake-lock
         mWakeLock.release();
+    }
+
+    private void mqtt_win(){
+        for (int i = 0; i < 3; i++) {
+            publish("rot");
+            sleep();
+            publish("schwarz");
+            sleep();
+        }
+    }
+
+    private void sleep(){
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Duration getDuration() {
@@ -292,25 +361,15 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Accelerometer
          */
-        private Sensor mAccelerometer;
+        private final Sensor mAccelerometer;
         /**
          * Last timestamp when calculating dT
          */
         private long mLastT;
 
 
-        /**
-         * physical pixels of the screen along the x-axis
-         */
-        private float mXDpi;
-        /**
-         * physical pixels of the screen along the y-axis
-         */
-        private float mYDpi;
-
-
-        private float mMetersToPixelsX;
-        private float mMetersToPixelsY;
+        private final float mMetersToPixelsX;
+        private final float mMetersToPixelsY;
 
         private float mXOrigin;
         private float mYOrigin;
@@ -345,10 +404,6 @@ public class MainActivity extends AppCompatActivity {
                 super(context, attrs, defStyleAttr);
             }
 
-            public WinView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-                super(context, attrs, defStyleAttr, defStyleRes);
-            }
-
             @Override
             protected void onDraw(Canvas canvas){
                 super.onDraw(canvas);
@@ -379,12 +434,6 @@ public class MainActivity extends AppCompatActivity {
 
             public Particle(Context context, AttributeSet attrs, int defStyleAttr) {
                 super(context, attrs, defStyleAttr);
-            }
-
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            public Particle(Context context, AttributeSet attrs, int defStyleAttr,
-                            int defStyleRes) {
-                super(context, attrs, defStyleAttr, defStyleRes);
             }
 
 
@@ -434,9 +483,6 @@ public class MainActivity extends AppCompatActivity {
                 super(context, attrs, defStyleAttr);
             }
 
-            public Goal(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-                super(context, attrs, defStyleAttr, defStyleRes);
-            }
         }
 
         /**
@@ -455,10 +501,6 @@ public class MainActivity extends AppCompatActivity {
 
             public FalseFriend(Context context, AttributeSet attrs, int defStyleAttr) {
                 super(context, attrs, defStyleAttr);
-            }
-
-            public FalseFriend(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-                super(context, attrs, defStyleAttr, defStyleRes);
             }
 
         }
@@ -481,10 +523,6 @@ public class MainActivity extends AppCompatActivity {
 
             public Ball(Context context, AttributeSet attrs, int defStyleAttr) {
                 super(context, attrs, defStyleAttr);
-            }
-
-            public Ball(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-                super(context, attrs, defStyleAttr, defStyleRes);
             }
 
             /** Computes the new coordinates and velocities
@@ -553,7 +591,7 @@ public class MainActivity extends AppCompatActivity {
             /**
              * The ball that gets rolled around the screen
              */
-            private Ball ball= new Ball(getContext());
+            private final Ball ball= new Ball(getContext());
 
             /**
              * The number of FalseFriends in the Particle System
@@ -563,12 +601,12 @@ public class MainActivity extends AppCompatActivity {
             /**
              * An Array of n FalseFriends
              */
-            private FalseFriend mFalseFriends[] = new FalseFriend[NUM_FF];
+            private final FalseFriend[] mFalseFriends = new FalseFriend[NUM_FF];
 
             /**
              * The goal a player has to roll the ball into
              */
-            private Goal goal = new Goal(getContext());
+            private final Goal goal = new Goal(getContext());
 
             ParticleSystem() {
                 /*
@@ -628,11 +666,7 @@ public class MainActivity extends AppCompatActivity {
                 distance =  (float) Math.sqrt(x * x + y * y);
 
                 // we can use the ball radius as at least the center of the ball should be intersecting
-                if (distance <= sBallDiameter / 2){
-                    return true;
-                }
-
-                return false;
+                return distance <= sBallDiameter / 2;
             }
 
             /**
@@ -644,12 +678,11 @@ public class MainActivity extends AppCompatActivity {
              * @param timestamp the current time
              */
             private void updatePositions(float sx, float sy, long timestamp) {
-                final long t = timestamp;
                 if (mLastT != 0) {
-                    final float dT = (float) (t - mLastT) / 1000.f /** (1.0f / 1000000000.0f)*/;
+                    final float dT = (float) (timestamp - mLastT) / 1000.f;
                     ball.computePhysics(sx, sy, dT);
                 }
-                mLastT = t;
+                mLastT = timestamp;
             }
 
             /**
@@ -821,8 +854,14 @@ public class MainActivity extends AppCompatActivity {
 
             DisplayMetrics metrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            mXDpi = metrics.xdpi;
-            mYDpi = metrics.ydpi;
+            /*
+              physical pixels of the screen along the x-axis
+             */
+            float mXDpi = metrics.xdpi;
+            /*
+              physical pixels of the screen along the y-axis
+             */
+            float mYDpi = metrics.ydpi;
             mMetersToPixelsX = mXDpi / 0.0254f;
             mMetersToPixelsY = mYDpi / 0.0254f;
 

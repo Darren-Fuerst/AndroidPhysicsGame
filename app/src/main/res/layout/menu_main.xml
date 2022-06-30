@@ -7,10 +7,9 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="529dp"
-        android:layout_height="787dp"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:background="@drawable/wood"
-        android:text="HighScores"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.737"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,61 +19,70 @@
         android:id="@+id/startgamebtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="116dp"
         android:onClick="openGameActivity"
-        android:text="Start Game"
+        android:text="Starten"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mqtt_checkbox" />
-
-    <ListView
-        android:id="@+id/list_view"
-        style="@android:style/Widget.ListView.Menu"
-        android:layout_width="249dp"
-        android:layout_height="373dp"
-        android:layout_marginTop="32dp"
-        android:alpha="0.8"
-        android:background="#59370C"
-        android:textColor="#FFFFFF"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/show_highscore_btn" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginTop="36dp"
         android:onClick="openSettingsActivity"
         android:text="MQTT Settings"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/list_view" />
-
-    <CheckBox
-        android:id="@+id/mqtt_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="100dp"
-        android:text="Mit MQTT Spielen"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toStartOf="@+id/button"
-        app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/list_view" />
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="332dp"
         android:layout_height="51dp"
-        android:layout_marginStart="48dp"
         android:layout_marginTop="28dp"
         android:text="Es wird 3 Sekunden auf eine Verbindung per MQTT gewartet.\n Sonst wird das Handy benutzt."
         android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/list_view" />
+        app:layout_constraintTop_toBottomOf="@+id/startgamebtn" />
+
+    <Button
+        android:id="@+id/show_highscore_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="148dp"
+        android:onClick="openScoresView"
+        android:text="Scores ansehen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/sound_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="257dp"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="68dp"
+        android:text="Sound"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/show_highscore_btn" />
+
+    <Switch
+        android:id="@+id/mqtt_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="80dp"
+        android:text="MQTT"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toStartOf="@+id/sound_switch"
+        app:layout_constraintTop_toBottomOf="@+id/show_highscore_btn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
