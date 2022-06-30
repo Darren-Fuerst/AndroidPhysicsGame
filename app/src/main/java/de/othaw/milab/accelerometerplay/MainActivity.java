@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -41,7 +40,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -55,11 +53,9 @@ import java.time.Instant;
 import java.util.Random;
 
 /**
- * This is an example of using the accelerometer to integrate the device's
- * acceleration to a position using the Verlet method. This is illustrated with
- * a very simple particle system comprised of a few iron balls freely moving on
- * an inclined wooden table. The inclination of the virtual table is controlled
- * by the device's accelerometer.
+ * The Main Activity handles all Game Views and Elements.
+ * It has Simulationview which can be seen as "one level" for the game
+ *
  *
  * @see SensorManager
  * @see SensorEvent
@@ -73,27 +69,93 @@ public class MainActivity extends AppCompatActivity {
      */
     private static final int LEVELS_TO_PLAY = 5;
 
+    /**
+     * Instance of a Simulationview
+     */
     private SimulationView mSimulationView;
+
+    /**
+     * Instance of a Sensormanager
+     */
     private SensorManager mSensorManager;
+
+    /**
+     * Default Display
+     */
     private Display mDisplay;
+
+    /**
+     * Wakelock
+     */
     private WakeLock mWakeLock;
 
+    /**
+     * The Topic to subscribe to. This is where the Sensehat sends accelermoter data
+     */
     private static final String sub_topic = "sensor/data";
+
+    /**
+     * The Topic to publish to. This is where the Sensehat receives messages
+     */
     private static final String pub_topic = "sensehat/message";
-    private final int qos = 0; // MQTT quality of service
+
+    /**
+     * Mqtt quality of service
+     */
+    private final int qos = 0;
+
+    /**
+     * Array storing x and y accelerometer Date of the Sensehat
+     */
     private final Float[] data = new Float[] {0f,0f};
+    /**
+     * MemoryPersistence object Instance
+     */
     private final MemoryPersistence persistence = new MemoryPersistence();
+
+    /**
+     * Mqtt Client Instance
+     */
     private MqttClient client;
+
+    /**
+     * Tag for logging
+     */
     private final String TAG = MainActivity.class.getSimpleName();
 
+    /**
+     * Broker ip
+     */
     private String BROKER;
+
+    /**
+     * Flag for activating or deactivating remote
+     */
     private int remote;
+
+    /**
+     * Flag for activating or deactivating sound
+     */
     private int sound;
+
+    /**
+     * Mediaplayer Instance
+     */
     private MediaPlayer mp;
 
+    /**
+     * Counts the current level
+     */
     private static int levelcount;
+
+    /**
+     * Duration of the game
+     */
     private static Duration duration;
 
+    /**
+     * Records the starting time
+     */
     private Instant starttime;
 
 
@@ -103,11 +165,15 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // dbHelper to interface with sqlite database
         DBHelper dbHelper = new DBHelper(this);
+
+        // get current settings
         BROKER = dbHelper.getBroker();
         remote = dbHelper.getRemote();
         sound = dbHelper.getSound();
 
+        // set levelcount to 0 when starting a new game
         levelcount = 0;
 
         // Get an instance of the SensorManager
@@ -124,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass()
                 .getName());
 
+        // if sound is activated create the MediaPlayer
         if(sound == 1) {
             mp = MediaPlayer.create(this, R.raw.level_complete);
         }
@@ -133,10 +200,15 @@ public class MainActivity extends AppCompatActivity {
         mSimulationView.setBackgroundResource(R.drawable.wood);
         setContentView(mSimulationView);
 
+        // record the starttime
         starttime = Instant.now();
-
     }
 
+    /**
+     * Gets the current level count
+     *
+     * @return current levelcount
+     */
     public static int getLevelCount(){
         return levelcount;
     }
@@ -144,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * finishes the current Activity and returns to the End of Game Menu
+     * finishes the current Activity and opens the the End of Game Menu
      */
     public void goToScoreMenu(){
         if (sound == 1) {
@@ -158,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles the instantiating of the next level
+     * Handles the instantiating of the next level or displaying of the end Menu
      */
     public void newLevel() {
         // increase the level count
@@ -190,13 +262,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sends a mqtt message making the SenseHat blink yellow
+     */
     private void blinkLevels(){
         //gelb blinken zwischen leveln
         publish("gelb");
     }
 
     /**
-     * Connect to broker and
+     * Connect to broker and blink if successfully connected
      * @param broker Broker to connect to
      */
     private void connect (String broker) {
@@ -223,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Subscribes to a given topic
+     * Subscribes to the sub_topic topic
      */
     private void subscribe() {
         try {
@@ -276,6 +351,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sends a message making the SenseHat blink green
+     */
     private void blinkConnectionSuccess() {
             publish("gruen");
     }
@@ -320,11 +398,17 @@ public class MainActivity extends AppCompatActivity {
         mWakeLock.release();
     }
 
+    /**
+     * Sends a mqtt message making the Sensehat blink red
+     */
     private void mqtt_win(){
             publish("rot");
     }
 
-
+    /**
+     *  Gets the Duration of the game between start and win
+     * @return Duration
+     */
     public static Duration getDuration() {
         return duration;
     }
@@ -360,14 +444,29 @@ public class MainActivity extends AppCompatActivity {
          */
         private long mLastT;
 
-
+        /**
+         * ratio of meters to pixels along x axis
+         */
         private final float mMetersToPixelsX;
+
+        /**
+         * ratio of meters to pixels along y axis
+         */
         private final float mMetersToPixelsY;
 
         private float mXOrigin;
         private float mYOrigin;
+
+        /**
+         * x Value of accelerometer
+         */
         private float mSensorX;
+
+        /**
+         * y Value of accelerometer
+         */
         private float mSensorY;
+
         /**
          * Horizontal bound of the screen
          */
@@ -383,31 +482,9 @@ public class MainActivity extends AppCompatActivity {
          */
         private final ParticleSystem mParticleSystem;
 
-        public class WinView extends View{
-
-            public WinView(Context context) {
-                super(context);
-            }
-
-            public WinView(Context context, @Nullable AttributeSet attrs) {
-                super(context, attrs);
-            }
-
-            public WinView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-                super(context, attrs, defStyleAttr);
-            }
-
-            @Override
-            protected void onDraw(Canvas canvas){
-                super.onDraw(canvas);
-
-
-            }
-        }
-
         /**
          * Particle is used as a base class for ball, goal and falseFriend. Each Particle has a
-         * random position on the screen.
+         * random (starting) position on the screen.
          */
         class Particle extends View {
 
@@ -479,7 +556,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * A FalseFriend looks just like the goal, but does not make the player win,
+         * A FalseFriend is coloured differently from the goal and does not make the player win,
          * instead intersecting with a FalseFriend slows down the ball.
          */
         class FalseFriend extends Particle{
@@ -500,7 +577,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         /**
-         * A ball has a velocity aswell as a position in space. It is rolled around the screen by a player.
+         * A ball has a velocity as well as a position in space. It is rolled around the screen by a player.
          */
         class Ball extends Particle{
             private float mVelX;
@@ -607,12 +684,12 @@ public class MainActivity extends AppCompatActivity {
                  */
                 for (int i = 0; i < mFalseFriends.length; i++) {
                     mFalseFriends[i] = new FalseFriend(getContext());
-                    mFalseFriends[i].setBackgroundResource(R.drawable.goal2);
+                    mFalseFriends[i].setBackgroundResource(R.drawable.falsefriend);
                     mFalseFriends[i].setLayerType(LAYER_TYPE_HARDWARE, null);
                     addView(mFalseFriends[i], new ViewGroup.LayoutParams(mDstWidth, mDstHeight));
                 }
 
-                goal.setBackgroundColor(Color.MAGENTA);
+                goal.setBackgroundResource(R.drawable.goal);
                 goal.setLayerType(LAYER_TYPE_HARDWARE, null);
                 addView(goal, new ViewGroup.LayoutParams(mDstWidth, mDstHeight));
 
@@ -649,6 +726,11 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
+            /***
+             * Checks if the ball is in the goal
+             *
+             * @return boolean value: true if in goal, false if not
+             */
             public boolean checkIfByGoal(){
                 float x;
                 float y;
@@ -683,6 +765,8 @@ public class MainActivity extends AppCompatActivity {
              * position of all the particles and resolving the constraints and
              * collisions.
              *
+             * Checking if the player has reached the goal is also done here.
+             *
              * @param sx mSensorX
              * @param sy mSensorY
              * @param now current system time
@@ -691,20 +775,16 @@ public class MainActivity extends AppCompatActivity {
                 // update the system's positions
                 updatePositions(sx, sy, now);
 
-                if (checkIfByFalseFriend()){
+                if (checkIfByGoal()){
                     stopSimulation();
-
                     newLevel();
-
                 }
                 ball.resolveCollisionWithBounds();
-                //goal.resolveCollisionWithBounds();
-
                 removeOverlap();
             }
 
             /**
-             * Resolves Collisions between FalseFriends so they don't overlap on screen
+             * Resolves Collisions between FalseFriends so they don't overlap each other on screen
              */
             private  void removeOverlap(){
 
@@ -835,6 +915,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * unregisters the accelerometer listener
+         */
         public void stopSimulation() {
             if (remote == 0) {
                 mSensorManager.unregisterListener(this);

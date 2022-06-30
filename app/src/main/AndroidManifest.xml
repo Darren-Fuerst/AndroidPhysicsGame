@@ -19,7 +19,7 @@
             android:name=".ListHighScores"
             android:exported="false" />
         <activity
-            android:name=".ConnectMQTT"
+            android:name=".ConnectMQTTSettings"
             android:exported="false" />
         <activity
             android:name=".HighScoreListLayout"

@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
+/**
+ *  Implements the Highscore List Layout
+ */
 public class HighScoreListLayout extends AppCompatActivity {
 
     @Override
