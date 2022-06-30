@@ -691,11 +691,9 @@ public class MainActivity extends AppCompatActivity {
                 // update the system's positions
                 updatePositions(sx, sy, now);
 
-                if (checkIfByFalseFriend()){
+                if (checkIfByGoal()){
                     stopSimulation();
-
                     newLevel();
-
                 }
                 ball.resolveCollisionWithBounds();
                 //goal.resolveCollisionWithBounds();
