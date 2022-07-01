@@ -37,7 +37,7 @@ public class gameend_menu extends AppCompatActivity {
         float time = Float.parseFloat(twoDForm.format(duration.toMillis() * 0.001f));
 
         // print the time to screen
-        String time_needed = "Your time needed was " +  time   + " seconds!";
+        String time_needed = "Du hast " +  time   + " Sekunden gebraucht!";
         t.setText(time_needed);
 
     }

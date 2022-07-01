@@ -244,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
             if(remote == 1) {
                 blinkLevels();
             }
-
             if(sound == 1) {
                 mp.start();
             }
@@ -745,7 +744,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             /**
-             * Update the position of each particle in the system using the
+             * Update the position of the ball in the system using the
              * Verlet integrator.
              *
              * @param sx mSensorX
